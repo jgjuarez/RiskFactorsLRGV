@@ -149,5 +149,24 @@ HoleUnderPr <- ifelse(HoleUnder [,] == 1,1,
 HoleUnderTot <- matrix(rowSums(HoleUnderPr))
 View(HoleUnderTot)
 
+#P.127 to 133 code XXX.13
+
+ThresholdCovers <- dplyr::select(Door, ends_with(".13"))
+
+ThresholdCoversPr <- ifelse(ThresholdCovers [,] == 1,1, 
+                      ifelse(ThresholdCovers [,] == 2,0,0))
+
+ThresholdCoversTot <- matrix(rowSums(ThresholdCoversPr))
+View(ThresholdCoversTot)
+
+#P.127 to 133 code XXX.14
+
+DBrush <- dplyr::select(Door, ends_with(".14"))
+
+DBrushPr <- ifelse(DBrush [,] == 1,1, 
+                            ifelse(DBrush [,] == 2,0,0))
+
+DBrushTot <- matrix(rowSums(DBrushPr))
+View(DBrushTot)
 
 
