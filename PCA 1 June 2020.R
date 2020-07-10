@@ -1,11 +1,4 @@
-# PCA analyses for the AGO surveillance of Ae. aegypti in the LRGV
-
-library(FactoMineR)
-library(factoextra)
-
-
-
-#I need to recode the different variables for window and door just to have yes and no for quality purposes. 
+#I need to recode the different variables for window and door just to have yes and no for quality purposes, then get count data for total holes.  
 
 library(dplyr)
 library(car)
@@ -168,5 +161,143 @@ DBrushPr <- ifelse(DBrush [,] == 1,1,
 
 DBrushTot <- matrix(rowSums(DBrushPr))
 View(DBrushTot)
+
+#Now that we have the recoded variables we can conduct the Principal Component analysis
+
+library(FactoMineR)
+library(factoextra)
+library(ade4)
+library(ExPosition)
+library(readxl)
+library(ggplot2)
+library(corrplot)
+
+Surveys <- read_excel("RiskFactors1July.xlsx", 
+                      sheet = "Surveys")
+
+#This is the Window PCA index
+
+winpca <- Surveys[,c(39:46)]
+View(winpca)
+
+h1 <- princomp(winpca, cor = T)
+summary(h1)
+
+loadings(h1)
+
+h1pred <- predict(h1)[,1]
+
+#Visualization of the PCA results
+
+h1.1 <- PCA(winpca, scale.unit = T, ncp = 5, graph = F)
+summary(h1.1)
+
+eig.val <- get_eigenvalue(h1.1) 
+eig.val
+##
+
+
+h1.1$call$ecart.type  #"standard error of the variables"
+fviz_eig(h1.1, addlabels = TRUE, ylim = c(0, 30))
+
+winvar <- get_pca_var(h1.1)
+corrplot(winvar$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
+
+fviz_pca_var(h1.1, col.var = "cos2", alpha.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
+
+corrplot(winvar$contrib, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
+
+fviz_contrib(h1.1, choice = "var", axes = 1:2, top = 10)
+
+res.desc <- dimdesc(h1.1, axes = c(1,2), proba = 0.05) # Description of dimension 1 
+res.desc$Dim.1
+
+fviz_pca_ind(h1.1)
+
+fviz_pca_ind(h1.1, pointsize = "cos2", pointshape = 21, fill = "#E7B800", repel = TRUE # Avoid text overlapping (slow if many points) 
+             )
+fviz_pca_ind(h1.1, col.ind = "cos2", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
+             )
+fviz_pca_ind(h1.1, geom.ind = "point", # show points only (nbut not "text") 
+             col.ind = Surveys$Community, # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#FC4E07", "lightgreen","red","black","gray","lightblue"), addEllipses = TRUE, # Concentration ellipses 
+             legend.title = "Groups" 
+             )
+
+
+fviz_pca_biplot(h1.1, # Fill individuals by groups 
+                geom.ind = "point", pointshape = 21, pointsize = 2.5, fill.ind = Surveys$Income, col.ind = "black", # Color variable by groups 
+                legend.title = list(fill = "Income", color = "Clusters"), repel = TRUE
+                # Avoid label overplotting
+)+
+  ggpubr::fill_palette("jco")+
+  # Indiviual fill color
+  ggpubr::color_palette("npg")
+
+#Save the results into a single CSV file
+write.infile(h1.1, "pca.csv", sep = "\t")
+
+loadings(h1)
+            
+predict(h1)[,1]
+
+
+
+
+
+
+
+
+
+
+
+res.famd1 <- FAMD(KAPpca1, graph = FALSE)
+summary(res.famd1)
+
+var <- get_famd_var(res.famd1)
+# Coordinates of variables
+head(var$coord)
+# Cos2: quality of representation on the factore map
+head(var$cos2)
+# Contributions to the  dimensions
+head(var$contrib)
+
+var2 <- get_famd_ind(res.famd1)
+# Coordinates of variables
+head(var2$coord)
+# Cos2: quality of representation on the factore map
+head(var2$cos2)
+# Contributions to the  dimensions
+head(var2$contrib)
+
+
+
+
+df <- predict(res.famd1, newdata = KAPpca1)
+?predict
+
+get_eigenvalue(res.famd1)
+fviz_screeplot(res.famd1)
+fviz_famd_var(res.famd1, repel = TRUE)
+fviz_contrib(res.famd1, "var", axes = 1)
+fviz_contrib(res.famd1, "var", axes = 2)
+fviz_famd_var(res.famd1, "quanti.var", col.var = "contrib", 
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+              repel = TRUE)
+fviz_famd_var(res.famd1, "quali.var", col.var = "contrib", 
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"))
+
+
+predict(res.famd1, newdata = Surveys)
+
+fviz_eig(res.famd1)
+get_famd_ind(res.famd1)
+
+
+
+
+fviz_famd_ind(res.famd1) 
+fviz_famd_var(res.famd1)
+
 
 
