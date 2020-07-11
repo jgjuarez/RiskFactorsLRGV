@@ -177,7 +177,7 @@ Surveys <- read_excel("RiskFactors1July.xlsx",
 
 #This is the Window PCA index
 
-winpca <- Surveys[,c(39:46)]
+winpca <- Surveys[,c(40:47)]
 View(winpca)
 
 h1 <- princomp(winpca, cor = T)
@@ -188,26 +188,32 @@ loadings(h1)
 h1pred <- predict(h1)[,1]
 
 #Visualization of the PCA results
+fviz_eig(h1, addlabels = TRUE, ylim = c(0, 30))
+
+winvar <- get_pca_var(h1)
+corrplot(winvar$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
+
+fviz_pca_var(h1, col.var = "cos2", alpha.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
+
+fviz_contrib(h1, choice = "var", axes = 1:2, top = 10)
+
+fviz_pca_ind(h1, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
+)
+
+
+
 
 h1.1 <- PCA(winpca, scale.unit = T, ncp = 5, graph = F)
 summary(h1.1)
 
 eig.val <- get_eigenvalue(h1.1) 
 eig.val
-##
+
 
 
 h1.1$call$ecart.type  #"standard error of the variables"
-fviz_eig(h1.1, addlabels = TRUE, ylim = c(0, 30))
 
-winvar <- get_pca_var(h1.1)
-corrplot(winvar$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
 
-fviz_pca_var(h1.1, col.var = "cos2", alpha.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
-
-corrplot(winvar$contrib, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
-
-fviz_contrib(h1.1, choice = "var", axes = 1:2, top = 10)
 
 res.desc <- dimdesc(h1.1, axes = c(1,2), proba = 0.05) # Description of dimension 1 
 res.desc$Dim.1
@@ -216,7 +222,7 @@ fviz_pca_ind(h1.1)
 
 fviz_pca_ind(h1.1, pointsize = "cos2", pointshape = 21, fill = "#E7B800", repel = TRUE # Avoid text overlapping (slow if many points) 
              )
-fviz_pca_ind(h1.1, col.ind = "cos2", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
+fviz_pca_ind(h1, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
              )
 fviz_pca_ind(h1.1, geom.ind = "point", # show points only (nbut not "text") 
              col.ind = Surveys$Community, # color by groups 
