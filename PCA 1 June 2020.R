@@ -171,6 +171,7 @@ library(ExPosition)
 library(readxl)
 library(ggplot2)
 library(corrplot)
+library(gridExtra)
 
 Surveys <- read_excel("RiskFactors1July.xlsx", 
                       sheet = "Surveys")
@@ -187,123 +188,98 @@ loadings(h1)
 
 h1pred <- predict(h1)[,1]
 
+h1.1 <- PCA(winpca, scale.unit = T, ncp = 5, graph = F)
+summary(h1.1)
+
+h1pred <- predict.PCA(h1.1, newdata = winpca)
+
 #Visualization of the PCA results
 fviz_eig(h1, addlabels = TRUE, ylim = c(0, 30))
 
 winvar <- get_pca_var(h1)
 corrplot(winvar$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
 
-fviz_pca_var(h1, col.var = "cos2", alpha.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
+fviz_pca_var(h1, col.var = "contrib", alpha.var = "cos2",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
 
 fviz_contrib(h1, choice = "var", axes = 1:2, top = 10)
 
 fviz_pca_ind(h1, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
 )
 
+#This is the Door PCA index
 
+doorpca <- Surveys[,c(48:55)]
+View(doorpca)
 
+h2 <- princomp(doorpca, cor = T)
+summary(h2)
 
-h1.1 <- PCA(winpca, scale.unit = T, ncp = 5, graph = F)
-summary(h1.1)
+loadings(h2)
 
-eig.val <- get_eigenvalue(h1.1) 
-eig.val
+h2pred <- predict(h2)[,1]
 
+h2.1 <- PCA(doorpca, scale.unit = T, ncp = 5, graph = F)
+summary(h2.1)
 
+#Visualization of the PCA results
 
-h1.1$call$ecart.type  #"standard error of the variables"
+fviz_eig(h2, addlabels = TRUE, ylim = c(0, 30))
 
+doorvar <- get_pca_var(h2)
+corrplot(doorvar$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
 
+fviz_pca_var(h2, col.var = "contrib", alpha.var = "cos2",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
 
-res.desc <- dimdesc(h1.1, axes = c(1,2), proba = 0.05) # Description of dimension 1 
-res.desc$Dim.1
+fviz_contrib(h2, choice = "var", axes = 1:2, top = 10)
 
-fviz_pca_ind(h1.1)
+fviz_pca_ind(h2, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
+)
 
-fviz_pca_ind(h1.1, pointsize = "cos2", pointshape = 21, fill = "#E7B800", repel = TRUE # Avoid text overlapping (slow if many points) 
-             )
-fviz_pca_ind(h1, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
-             )
-fviz_pca_ind(h1.1, geom.ind = "point", # show points only (nbut not "text") 
-             col.ind = Surveys$Community, # color by groups 
-             palette = c("#00AFBB", "#E7B800", "#FC4E07", "lightgreen","red","black","gray","lightblue"), addEllipses = TRUE, # Concentration ellipses 
-             legend.title = "Groups" 
-             )
+#This is the Yard FMAD index
 
+yardpca <- Surveys[,c(26,28:36,38:39)]
+View(yardpca)
 
-fviz_pca_biplot(h1.1, # Fill individuals by groups 
-                geom.ind = "point", pointshape = 21, pointsize = 2.5, fill.ind = Surveys$Income, col.ind = "black", # Color variable by groups 
-                legend.title = list(fill = "Income", color = "Clusters"), repel = TRUE
-                # Avoid label overplotting
-)+
-  ggpubr::fill_palette("jco")+
-  # Indiviual fill color
-  ggpubr::color_palette("npg")
+h3.1 <- FAMD(yardpca, ncp = 5, graph = T)
+summary(h3.1)
 
-#Save the results into a single CSV file
-write.infile(h1.1, "pca.csv", sep = "\t")
+h3pred <- predict.FAMD(h3.1, newdata = yardpca)
 
-loadings(h1)
-            
-predict(h1)[,1]
+#Visualization of the FMAD results
+fviz_eig(h3.1, addlabels = TRUE, ylim = c(0, 15))
 
+yardvar <- get_famd_var(h3.1)
+corrplot(yardvar$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
 
+fviz_famd_var(h3.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
 
+fviz_famd_var(h3.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
 
+fviz_contrib(h3.1, choice = "var", axes = 1:2, top = 10)
 
+#Figure transformation for the PCM models
+tiff("PMC.tiff",width=9, height=9, units="in", res=300)
 
+p1 <- fviz_famd_var(h3.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Yard variables - FAMD")
 
+p2 <- fviz_famd_var(h3.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Yard quantitative - FAMD")
 
+p3 <- fviz_pca_var(h1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Window quantitative - PCA")
 
+p4 <- fviz_pca_var(h2, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Door quantitative - PCA")
 
+gridExtra::grid.arrange(p1,p2,p3,p4)
 
-res.famd1 <- FAMD(KAPpca1, graph = FALSE)
-summary(res.famd1)
+dev.off()
 
-var <- get_famd_var(res.famd1)
-# Coordinates of variables
-head(var$coord)
-# Cos2: quality of representation on the factore map
-head(var$cos2)
-# Contributions to the  dimensions
-head(var$contrib)
+#This is the KAP1 FMAD index
 
-var2 <- get_famd_ind(res.famd1)
-# Coordinates of variables
-head(var2$coord)
-# Cos2: quality of representation on the factore map
-head(var2$cos2)
-# Contributions to the  dimensions
-head(var2$contrib)
+kap1pca <- Surveys[,c(26,28:36,38:39)]
+View(yardpca)
 
+h4.1 <- FAMD(kap1pca, ncp = 5, graph = T)
+summary(h4.1)
 
-
-
-df <- predict(res.famd1, newdata = KAPpca1)
-?predict
-
-get_eigenvalue(res.famd1)
-fviz_screeplot(res.famd1)
-fviz_famd_var(res.famd1, repel = TRUE)
-fviz_contrib(res.famd1, "var", axes = 1)
-fviz_contrib(res.famd1, "var", axes = 2)
-fviz_famd_var(res.famd1, "quanti.var", col.var = "contrib", 
-              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-              repel = TRUE)
-fviz_famd_var(res.famd1, "quali.var", col.var = "contrib", 
-              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"))
-
-
-predict(res.famd1, newdata = Surveys)
-
-fviz_eig(res.famd1)
-get_famd_ind(res.famd1)
-
-
-
-
-fviz_famd_ind(res.famd1) 
-fviz_famd_var(res.famd1)
-
+h4pred <- predict.FAMD(h4.1, newdata = kap1pca)
 
 
