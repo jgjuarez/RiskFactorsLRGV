@@ -172,13 +172,14 @@ library(readxl)
 library(ggplot2)
 library(corrplot)
 library(gridExtra)
+library(dplyr)
 
 Surveys <- read_excel("RiskFactors1July.xlsx", 
                       sheet = "Surveys")
 
 #This is the Window PCA index
 
-winpca <- Surveys[,c(40:47)]
+winpca <- Surveys[,c(41:48)]
 View(winpca)
 
 h1 <- princomp(winpca, cor = T)
@@ -187,6 +188,8 @@ summary(h1)
 loadings(h1)
 
 h1pred <- predict(h1)[,1]
+
+df <- tibble(h1pred)
 
 h1.1 <- PCA(winpca, scale.unit = T, ncp = 5, graph = F)
 summary(h1.1)
@@ -208,7 +211,7 @@ fviz_pca_ind(h1, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00
 
 #This is the Door PCA index
 
-doorpca <- Surveys[,c(48:55)]
+doorpca <- Surveys[,c(49:56)]
 View(doorpca)
 
 h2 <- princomp(doorpca, cor = T)
@@ -217,6 +220,8 @@ summary(h2)
 loadings(h2)
 
 h2pred <- predict(h2)[,1]
+
+df2 <- tibble(h2pred)
 
 h2.1 <- PCA(doorpca, scale.unit = T, ncp = 5, graph = F)
 summary(h2.1)
@@ -237,13 +242,17 @@ fviz_pca_ind(h2, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00
 
 #This is the Yard FMAD index
 
-yardpca <- Surveys[,c(26,28:36,38:39)]
+yardpca <- Surveys[,c(27,29:37,39:40)]
 View(yardpca)
 
 h3.1 <- FAMD(yardpca, ncp = 5, graph = T)
 summary(h3.1)
 
 h3pred <- predict.FAMD(h3.1, newdata = yardpca)
+
+df3 <- data.frame(h3pred, stringsAsFactors = TRUE)
+
+df3.1 <- df3 %>% select(1)
 
 #Visualization of the FMAD results
 fviz_eig(h3.1, addlabels = TRUE, ylim = c(0, 15))
@@ -274,12 +283,79 @@ dev.off()
 
 #This is the KAP1 FMAD index
 
-kap1pca <- Surveys[,c(26,28:36,38:39)]
-View(yardpca)
+kap1pca <- Surveys[,c(10,14:15,18,20:21)]
+View(kap1pca)
 
 h4.1 <- FAMD(kap1pca, ncp = 5, graph = T)
 summary(h4.1)
 
 h4pred <- predict.FAMD(h4.1, newdata = kap1pca)
 
+df4 <- data.frame(h4pred, stringsAsFactors = TRUE)
+
+df4.1 <- df4 %>% select(1)
+
+h4.1$quali.var[["coord"]]
+
+#Visualization of the FMAD results
+fviz_eig(h4.1, addlabels = TRUE, ylim = c(0, 20))
+
+kap1var <- get_famd_var(h4.1)
+corrplot(kap1var$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
+
+fviz_famd_var(h4.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
+
+fviz_famd_var(h4.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
+
+fviz_contrib(h4.1, choice = "var", axes = 1:2, top = 10)
+
+#Figure transformation for the PCM2 models
+tiff("PMC2.tiff",width=9, height=9, units="in", res=300)
+
+p5 <- fviz_famd_var(h4.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "KAP1 variables - FAMD")
+
+p6 <- fviz_famd_var(h4.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "KAP1 quantitative - FAMD")
+
+gridExtra::grid.arrange(p5,p6)
+
+dev.off()
+
+#This is the KAP2 FMAD index
+
+kap2pca <- Surveys[,c(16:17,22:24,26)]
+View(kap2pca)
+
+h5.1 <- FAMD(kap2pca, ncp = 5, graph = T)
+summary(h5.1)
+
+h5pred <- predict.FAMD(h5.1, newdata = kap2pca)
+
+h5.1$quali.var[["coord"]]
+
+#Visualization of the FMAD results
+fviz_eig(h5.1, addlabels = TRUE, ylim = c(0, 15))
+
+kap2var <- get_famd_var(h5.1)
+corrplot(kap2var$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
+
+fviz_famd_var(h5.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
+
+fviz_famd_var(h5.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
+
+fviz_contrib(h5.1, choice = "var", axes = 1:2, top = 10)
+
+#Figure transformation for the PCM2 models
+tiff("PMC2.tiff",width=9, height=9, units="in", res=300)
+
+p5 <- fviz_famd_var(h4.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "KAP1 variables - FAMD")
+
+p6 <- fviz_famd_var(h4.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "KAP1 quantitative - FAMD")
+
+p7 <- fviz_famd_var(h5.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "KAP2 variables - FAMD")
+
+p8 <- fviz_famd_var(h5.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "KAP2 quantitative - FAMD")
+
+gridExtra::grid.arrange(p5,p6,p7,p8)
+
+dev.off()
 
