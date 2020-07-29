@@ -212,46 +212,20 @@ fviz_eig(h5.1, addlabels = TRUE, ylim = c(0, 30))
 doorvar <- get_pca_var(h5.1)
 corrplot(doorvar$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
 
-fviz_pca_var(h5.1, col.var = "contrib", alpha.var = "cos2",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Door variables - PCA")
+fviz_pca_var(h5.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Door variables - PCA")
 
 fviz_contrib(h5.1, choice = "var", axes = 1, top = 10)
 
 fviz_pca_ind(h5.1, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
 ) + labs(title = "Door variables - PCA")
 
-
-
 #Figure transformation for the PCM models
-tiff("PMC.tiff",width=9, height=9, units="in", res=300)
+tiff("WindowDoor.tiff",width=10, height=4.5, units="in", res=300)
 
-p1 <- fviz_famd_var(h3.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Yard variables - FAMD")
-
-p2 <- fviz_famd_var(h3.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Yard quantitative - FAMD")
-
-p3 <- fviz_pca_var(h1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Window quantitative - PCA")
-
-p4 <- fviz_pca_var(h2, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Door quantitative - PCA")
-
-gridExtra::grid.arrange(p1,p2,p3,p4)
-
-dev.off()
-
-
-
-
-#Window
 p7 <- fviz_pca_var(h4.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Window variables - PCA")
 
+p8 <- fviz_pca_var(h5.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Door variables - PCA")
 
-#YARD
-tiff("Yard.tiff",width=9, height=9, units="in", res=300)
-
-p4 <- fviz_famd_var(h3.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE) + labs(title = "Yard quantitative variables - FAMD")
-
-p5 <- fviz_famd_var(h3.1, col.var = "contrib", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE, select.var = list(cos2 = 10)) + labs(title = "Yard variables - FAMD")
-
-p6 <- fviz_famd_var(h3.1, "quali.var", col.var = "contrib", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE, select.var = list(cos2 = 10)) + labs(title = "Yard variable categories - FAMD")
-
-gridExtra::grid.arrange(p4,p5,p6)
+gridExtra::grid.arrange(p7,p8, nrow = 1)
 
 dev.off()
