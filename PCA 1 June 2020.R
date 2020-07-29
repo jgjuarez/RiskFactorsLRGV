@@ -173,7 +173,7 @@ library(ggplot2)
 library(corrplot)
 library(gridExtra)
 library(dplyr)
-
+library(psych)
 Surveys <- read_excel("RiskFactors1July.xlsx", 
                       sheet = "Surveys")
 
@@ -181,6 +181,8 @@ Surveys <- read_excel("RiskFactors1July.xlsx",
 
 winpca <- Surveys[,c(41:48)]
 View(winpca)
+
+pairs.panels(winpca, gap = 0, pch = 21)
 
 h1 <- princomp(winpca, cor = T)
 summary(h1)
@@ -194,7 +196,13 @@ df <- tibble(h1pred)
 h1.1 <- PCA(winpca, scale.unit = T, ncp = 5, graph = F)
 summary(h1.1)
 
+corrmatrix <- as.data.frame(round(cor(winpca, h1.1$ind$coord)^2*100,0))
+
+corrmatrix[with(corrmatrix, order(-corrmatrix[,1])),]
+
 h1pred <- predict.PCA(h1.1, newdata = winpca)
+
+h1.1$var[["coord"]]
 
 #Visualization of the PCA results
 fviz_eig(h1, addlabels = TRUE, ylim = c(0, 30))
@@ -204,7 +212,7 @@ corrplot(winvar$cos2, is.corr = FALSE) #visualization of the cos2 of variables o
 
 fviz_pca_var(h1, col.var = "contrib", alpha.var = "cos2",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
 
-fviz_contrib(h1, choice = "var", axes = 1:2, top = 10)
+fviz_contrib(h1, choice = "var", axes = 1, top = 10)
 
 fviz_pca_ind(h1, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
 )
@@ -226,6 +234,7 @@ df2 <- tibble(h2pred)
 h2.1 <- PCA(doorpca, scale.unit = T, ncp = 5, graph = F)
 summary(h2.1)
 
+h2.1$var[["coord"]]
 #Visualization of the PCA results
 
 fviz_eig(h2, addlabels = TRUE, ylim = c(0, 30))
@@ -235,7 +244,7 @@ corrplot(doorvar$cos2, is.corr = FALSE) #visualization of the cos2 of variables 
 
 fviz_pca_var(h2, col.var = "contrib", alpha.var = "cos2",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
 
-fviz_contrib(h2, choice = "var", axes = 1:2, top = 10)
+fviz_contrib(h2, choice = "var", axes = 1, top = 10)
 
 fviz_pca_ind(h2, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE # Avoid text overlapping (slow if many points) 
 )
@@ -254,6 +263,7 @@ df3 <- data.frame(h3pred, stringsAsFactors = TRUE)
 
 df3.1 <- df3 %>% select(1)
 
+h3.1$quali.var[["coord"]]
 #Visualization of the FMAD results
 fviz_eig(h3.1, addlabels = TRUE, ylim = c(0, 15))
 
@@ -264,7 +274,7 @@ fviz_famd_var(h3.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", 
 
 fviz_famd_var(h3.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
 
-fviz_contrib(h3.1, choice = "var", axes = 1:2, top = 10)
+fviz_contrib(h3.1, choice = "var", axes = 1, top = 10)
 
 #Figure transformation for the PCM models
 tiff("PMC.tiff",width=9, height=9, units="in", res=300)
@@ -283,11 +293,19 @@ dev.off()
 
 #This is the KAP1 FMAD index
 
-kap1pca <- Surveys[,c(10,14:15,18,20:21)]
+kap1pca <- Surveys[,c(4,9,14:15,18,26)]
 View(kap1pca)
+
+h4.1 <- MCA(kap1pca, ncp = 5, graph = T)
+summary(h4.1)
+
+
+
 
 h4.1 <- FAMD(kap1pca, ncp = 5, graph = T)
 summary(h4.1)
+
+get_eigenvalue(h4.1)
 
 h4pred <- predict.FAMD(h4.1, newdata = kap1pca)
 
@@ -295,9 +313,15 @@ df4 <- data.frame(h4pred, stringsAsFactors = TRUE)
 
 df4.1 <- df4 %>% select(1)
 
-h4.1$quali.var[["coord"]]
+h4.1$var[["contrib"]]
+h4.1$var[["coord"]]
 
 #Visualization of the FMAD results
+fviz_contrib(h4.1, choice = "var", axes = 1:2, top = 10)
+
+
+
+
 fviz_eig(h4.1, addlabels = TRUE, ylim = c(0, 20))
 
 kap1var <- get_famd_var(h4.1)
@@ -307,7 +331,7 @@ fviz_famd_var(h4.1, col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", 
 
 fviz_famd_var(h4.1, "quanti.var", col.var = "contrib",gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE)
 
-fviz_contrib(h4.1, choice = "var", axes = 1:2, top = 10)
+fviz_contrib(h4.1, choice = "var", axes = 1, top = 10)
 
 #Figure transformation for the PCM2 models
 tiff("PMC2.tiff",width=9, height=9, units="in", res=300)
