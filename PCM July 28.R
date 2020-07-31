@@ -190,6 +190,8 @@ fviz_pca_ind(h4.1, col.ind = "contrib", pointsize = "cos2", gradient.cols = c("#
 doorpca <- Surveys[,c(49:56)]
 View(doorpca)
 
+pairs.panels(doorpca, gap = 0, pch = 21)
+
 h5.1 <- PCA(doorpca, scale.unit = T, ncp = 5, graph = F)
 summary(h5.1)
 
