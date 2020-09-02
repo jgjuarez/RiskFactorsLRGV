@@ -34,7 +34,7 @@ library(readxl)
 source(system.file("other_methods","lsmeans_methods.R",package="glmmTMB"))
 
 Risk <- read_excel("RiskFactors1July.xlsx", 
-                      sheet = "Surveys")
+                      sheet = "Pre")
 
 Risk$OpenWindowsFreq <- relevel(as.factor(Risk$OpenWindowsFreq), ref = "Never")
 
@@ -215,3 +215,28 @@ p3 <- p[[1]] + ylim(0,500) + xlim(-2,2)
 gridExtra::grid.arrange(p1,p2,p3)
 
 dev.off()
+
+
+
+
+#This portion of the analysis only evaluates the dataset from the PRE-intervention of 2018
+
+Risk <- read_excel("RiskFactors1July.xlsx", 
+                   sheet = "2018Pre")
+
+Risk$OpenWindowsFreq <- relevel(as.factor(Risk$OpenWindowsFreq), ref = "Never")
+
+Risk$MessyYard <- relevel(as.factor(Risk$MessyYard), ref = "Extremely orderly")
+
+Risk$Shade <- relevel(as.factor(Risk$Shade), ref = "No shade")
+
+#For this procedure we will do a Generalized linear Model analysis
+#Evaluating the best distribution for the dataset with count data for the indoor collections
+RisInPs <- glm(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Tires + Shade + Window1 + Window2 + Door1 + Door2 + TypeAC
+              , family = "poisson", data = Risk)
+summary(RisInPs)
+
+
+#Visualization of the data
+RisInPsV1 <- simulateResiduals(fittedModel = RisInPs, n = 250, plot = TRUE)
+
