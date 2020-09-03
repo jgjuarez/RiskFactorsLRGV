@@ -232,11 +232,116 @@ Risk$Shade <- relevel(as.factor(Risk$Shade), ref = "No shade")
 
 #For this procedure we will do a Generalized linear Model analysis
 #Evaluating the best distribution for the dataset with count data for the indoor collections
-RisInPs <- glm(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Tires + Shade + Window1 + Window2 + Door1 + Door2 + TypeAC
+RisInPs1 <- glm(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Tires + Shade + Window1 + Window2 + Door1 + Door2 + TypeAC
               , family = "poisson", data = Risk)
-summary(RisInPs)
+summary(RisInPs1)
 
+RisInPs2 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Tires + Shade + Window1 + Window2 + Door1 + Door2 + TypeAC
+              , family = "poisson", data = Risk)
+summary(RisInPs2)
 
 #Visualization of the data
-RisInPsV1 <- simulateResiduals(fittedModel = RisInPs, n = 250, plot = TRUE)
+RisInPsV1 <- simulateResiduals(fittedModel = RisInPs1, n = 250, plot = TRUE)
+RisInPsV2 <- simulateResiduals(fittedModel = RisInPs2, n = 250, plot = TRUE)
 
+#explore interaction contrasts of best fit
+
+m1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + MessyYard + Tires + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+              , family = "poisson", data = Risk)
+car::Anova(m1, type ="III")
+summary(m1)
+m2 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Tires + Window1 + Window2 + Door1
+              , family = "poisson", data = Risk)
+car::Anova(m2, type ="III")
+
+m3 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + AP2.1 + AP2.2 + MessyYard + Tires + Window1 + Window2 + Door1
+              , family = "poisson", data = Risk)
+car::Anova(m3, type ="III")
+
+m4 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + AP2.1 + MessyYard + Tires + Window1 + Window2 + Door1
+              , family = "poisson", data = Risk)
+car::Anova(m4, type ="III")
+
+m5 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + AP2.1 + MessyYard + Window1 + Window2 + Door1
+              , family = "poisson", data = Risk)
+car::Anova(m5, type ="III")
+
+m6 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + MessyYard + Window1 + Window2 + Door1
+              , family = "poisson", data = Risk)
+car::Anova(m6, type ="III")
+
+m7 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + MessyYard + Window1 + Window2 + Door1
+              , family = "poisson", data = Risk)
+car::Anova(m7, type ="III")
+
+summary(m7)
+
+
+
+
+
+m2 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Tires + Shade + Window1 + Window2 + Door1 + TypeAC
+              , family = "poisson", data = Risk)
+car::Anova(m2, type ="III")
+
+m3 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Tires + Shade + Window1 + Window2 + TypeAC
+              , family = "poisson", data = Risk)
+car::Anova(m3, type ="III")
+
+m4 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Shade + Window1 + Window2 + TypeAC
+              , family = "poisson", data = Risk)
+car::Anova(m4, type ="III")
+
+m5 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Window1 + Window2 + TypeAC
+              , family = "poisson", data = Risk)
+car::Anova(m5, type ="III")
+
+m6 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + MessyYard + Window1 + Window2 + TypeAC
+              , family = "poisson", data = Risk)
+car::Anova(m6, type ="III")
+
+m7 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + OpenWindowsFreq + WaterStorage + AP2.1 + MessyYard + Window1 + Window2
+              , family = "poisson", data = Risk)
+car::Anova(m7, type ="III")
+summary(m7)
+
+AICtab(m1,m2,m3,m4,m5,m6, base = T, weights = T, sort = FALSE)
+
+df <- tidy(m6)
+df1 <- tibble(df)
+
+tab_model(m6)
+
+#This next code takes a lot of time, skip to the joint_test and plot effects if already tested
+confint(m6, method = "uniroot")
+
+summary(m6)
+
+#Creating the figures
+
+my_title <- expression(paste("Indoor female ", italic("Ae. aegypti")))
+
+plot_model(m6, vline.color = "lightgray", transform = "plogis", sort.est = TRUE, show.value = TRUE, value.offset = .3, title = my_title)
+
+plot_model(m6, vline.color = "lightgray", sort.est = TRUE, show.value = TRUE, value.offset = .3, title = my_title)
+
+plot_model(m6, type = "pred", axis.title = my_title, title = "")
+
+#Making the figures for the GLMM models
+
+tiff("IndGLMM.tiff",width=9, height=9, units="in", res=300)
+
+p <- plot_model(m7, type = "int", axis.title = my_title, title = "") #this is the interaction term figures
+p1 <- p[[3]] + ylim(0,250) + xlim(0,3)
+p2 <- p[[2]] + ylim(0,600) + xlim(-2,2)
+p3 <- p[[1]] + ylim(0,500) + xlim(-2,2)
+
+gridExtra::grid.arrange(p1,p2,p3)
+
+dev.off()
+
+
+#Evaluating the best distribution for the dataset with count data for the outdoor collections
+RisInPs2 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Tires + Shade + Window1 + Window2 + Door1 + Door2 + TypeAC
+                    , family = "poisson", data = Risk)
+summary(RisInPs2)

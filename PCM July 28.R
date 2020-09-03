@@ -11,7 +11,7 @@ library(gridExtra)
 library(dplyr)
 library(psych)
 Surveys <- read_excel("RiskFactors1July.xlsx", 
-                      sheet = "Surveys")
+                      sheet = "Survey")
 
 #This is the KAP1 FMAD index
 
