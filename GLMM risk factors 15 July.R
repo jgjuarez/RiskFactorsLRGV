@@ -227,31 +227,48 @@ dev.off()
 
 
 
-
-#This portion of the analysis only evaluates the dataset from the PRE-intervention of 2018
-
-Risk <- read_excel("RiskFactors1July.xlsx", 
-                   sheet = "2018Pre")
-
-Risk$OpenWindowsFreq <- relevel(as.factor(Risk$OpenWindowsFreq), ref = "No")
-
-Risk$MessyYard <- relevel(as.factor(Risk$MessyYard), ref = "No")
-
-Risk$Shade <- relevel(as.factor(Risk$Shade), ref = "No shade")
-
-#For this procedure we will do a Generalized linear Model analysis
-#Evaluating the best distribution for the dataset with count data for the indoor collections
-RisInPs1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + MessyYard + Tires + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
-              , family = "poisson", data = Risk)
-
-#Visualization of the data
-RisInPsV1 <- simulateResiduals(fittedModel = RisInPs1, n = 250, plot = TRUE)
-
 #explore interaction contrasts of best fit
 
-m1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + MessyYard + Tires + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+m1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + Tires + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
               , family = "poisson", data = Risk)
 car::Anova(m1, type ="III")
+
+m2 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + MessyYard + Tires + AP2.1 + Window1 + Window2 + Door1 + Door2 
+              , family = "poisson", data = Risk)
+car::Anova(m2, type ="III")
+
+m3 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + MessyYard + Tires + AP2.1 + Window1 + Window2 + Door2 
+              , family = "poisson", data = Risk)
+car::Anova(m3, type ="III")
+
+m4 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + MessyYard + AP2.1 + Window1 + Window2 + Door2 
+              , family = "poisson", data = Risk)
+car::Anova(m4, type ="III")
+
+m5 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + MessyYard + AP2.1 + Window1 + Door2 
+              , family = "poisson", data = Risk)
+car::Anova(m5, type ="III")
+
+AICtab(m1,m2,m3,m4,m5, base = T, weights = T, sort = FALSE)
+
+df <- tidy(m4)
+df1 <- tibble(df)
+
+tab_model(m4)
+#This next code takes a lot of time, skip to the joint_test and plot effects if already tested
+confint(m4, method = "uniroot")
+
+summary(m4)
+
+#Creating the figures
+
+
+
+
+
+
+
+
 
 
 
@@ -492,3 +509,62 @@ dev.off()
 RisInPs2 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + MessyYard + Tires + Shade + Window1 + Window2 + Door1 + Door2 + TypeAC
                     , family = "poisson", data = Risk)
 summary(RisInPs2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+#This portion of the analysis only evaluates the dataset from the PRE-intervention of 2018
+
+Risk <- read_excel("RiskFactors4Sep.xlsx", 
+                   sheet = "Sheet1")
+
+Risk$OpenWindowsFreq <- relevel(as.factor(Risk$OpenWindowsFreq), ref = "No")
+
+Risk$MessyYard <- relevel(as.factor(Risk$MessyYard), ref = "Average")
+
+Risk$Shade <- relevel(as.factor(Risk$Shade), ref = "No shade")
+
+#For this procedure we will do a Generalized linear Model analysis
+#Evaluating the best distribution for the dataset with count data for the indoor collections
+RisInPs1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + Yard1 + Window1 + Window2 + Door1 + Door2 
+                    , family = "poisson", data = Risk)
+
+#Evaluation of the overdispersion of the dataset 
+check_overdispersion(RisInPs1)
+
+RisInNB1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + Yard1 + Window1 + Window2 + Door1 + Door2 
+                    , family = "nbinom1", data = Risk)
+
+RisInNB2 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + Yard1 + Window1 + Window2 + Door1 + Door2 
+                    , family = "nbinom2", data = Risk)
+
+#Visualization of the data
+RisInPsV1 <- simulateResiduals(fittedModel = RisInPs1, n = 250, plot = TRUE)
+RisInNB1V1 <- simulateResiduals(fittedModel = RisInNB1, n = 250, plot = TRUE)
+RisInNB2V1 <- simulateResiduals(fittedModel = RisInNB2, n = 250, plot = TRUE)
+
+#Checking the AIC values for each model
+AIC(RisInPs1)
+AIC(RisInNB1)
+AIC(RisInNB2)
+
+#explore interaction contrasts of best fit
+
+m1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + WaterStorage + AP2.1 + AP2.2 + Yard1 + Window1 + Window2 + Door1 + Door2 
+              , family = "nbinom2", data = Risk)
+car::Anova(m1, type ="III")
+summary(m1)
+
+
+
+
+

@@ -10,12 +10,12 @@ library(corrplot)
 library(gridExtra)
 library(dplyr)
 library(psych)
-Surveys <- read_excel("RiskFactors1July.xlsx", 
-                      sheet = "Survey")
+Surveys <- read_excel("RiskFactors4Sep.xlsx", 
+                      sheet = "Surveys")
 
 #This is the KAP1 FMAD index
 
-kap1pca <- Surveys[,c(4,9,14:15,18,26)]
+kap1pca <- Surveys[,c(9,14:15,18,25:26)]
 View(kap1pca)
 
 pairs.panels(kap1pca, gap = 0, pch = 21)
@@ -37,14 +37,14 @@ h1.1$var[["coord"]]
 #Visualization of the FMAD results
 fviz_contrib(h1.1, choice = "var", axes = 1:2, top = 10)
 
-fviz_eig(h1.1, addlabels = TRUE, ylim = c(0, 15))
+fviz_eig(h1.1, addlabels = TRUE, ylim = c(0, 18))
 
 kap1var <- get_mca_var(h1.1)
 corrplot(kap1var$cos2, is.corr = FALSE) #visualization of the cos2 of variables on all dimensions
 
 fviz_mca_var(h1.1, col.var = "contrib", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel = TRUE, select.var = list(cos2 = 10)) + labs(title = "AP1 variable categories - MCA")
 
-fviz_mca_var(h1.1, choice = "mca.cor",repel = TRUE, ggtheme = theme_minimal()) + labs(title = "AP1 variable - MCA")
+fviz_mca_var(h1.1, choice = "mca.cor",repel = TRUE, ggtheme = theme_minimal()) + labs(title = "AP1 variables - MCA") #correlation plots
 
 fviz_mca_biplot(h1.1, select.ind = list(contrib = 5), select.var = list(contrib = 5), ggtheme = theme_minimal(), repel = TRUE, col.var = "contrib")
 
@@ -119,9 +119,12 @@ df3.2 <- df3 %>% select(2)
 h3.1$quali.var[["coord"]]
 h3.1$quali.var[["contrib"]]
 h3.1$quali.var[["cos2"]]
+h3.1$quanti.var[["coord"]]
+h3.1$quanti.var[["contrib"]]
+h3.1$quanti.var[["cos2"]]
 
 #Visualization of the FMAD results
-fviz_eig(h3.1, addlabels = TRUE, ylim = c(0, 18))
+fviz_eig(h3.1, addlabels = TRUE, ylim = c(0, 21))
 
 yardvar <- get_famd_var(h3.1)
 
