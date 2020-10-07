@@ -126,9 +126,67 @@ plot_model(m7, vline.color = "lightgray", sort.est = TRUE, show.value = TRUE, va
 
 plot_model(m7, type = "pred", axis.title = my_title, title = "")
 
+#For this procedure we will do a Generalized linear Model analysis
+#Evaluating the best distribution for the dataset with count data for the outdoor collections
+RisOutPs2 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + MessyYard + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Tires + Income  + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+                     , family = "poisson", data = Risk)
 
+#Evaluation of the overdispersion of the dataset 
+check_overdispersion(RisOutPs2)
 
+#Testing distributions that better fit overdispersed count data
+RisOutNB1 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + MessyYard + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Tires + Income  + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+                     , family = "nbinom1", data = Risk)
 
+RisOutNB2 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + MessyYard + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Tires + Income  + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+                     , family = "nbinom2", data = Risk)
+
+#Checking the AIC values for each model
+AIC(RisOutPs2)
+AIC(RisOutNB1)
+AIC(RisOutNB2)
+
+#Visualization of the data
+RisOutPsV2 <- simulateResiduals(fittedModel = RisOutPs2, n = 250, plot = TRUE)
+RisOutNB1V2 <- simulateResiduals(fittedModel = RisOutNB1, n = 250, plot = TRUE)
+RisOutNB2V2 <- simulateResiduals(fittedModel = RisOutNB2, n = 250, plot = TRUE)
+
+#explore interaction contrasts of best fit
+m9 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + MessyYard + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Tires + Income  + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+              , family = "nbinom2", data = Risk)
+car::Anova(m9, type ="III")
+
+m10 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + MessyYard + OpenDoorFreq + WaterStorage + OtherContainers + Tires + Income  + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+               , family = "nbinom1", data = Risk)
+car::Anova(m10, type ="III")
+
+m11 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + MessyYard + OpenDoorFreq + WaterStorage + OtherContainers + Tires + Income  + AP2.1 + AP2.2 + Window1 + Door1 + Door2 
+               , family = "nbinom1", data = Risk)
+car::Anova(m11, type ="III")
+
+m12 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + OpenDoorFreq + WaterStorage + OtherContainers + Tires + Income  + AP2.1 + AP2.2 + Window1 + Door1 + Door2 
+               , family = "nbinom1", data = Risk)
+car::Anova(m12, type ="III")
+
+m13 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + OpenDoorFreq + OtherContainers + Tires + Income  + AP2.1 + AP2.2 + Window1 + Door1 + Door2 
+               , family = "nbinom1", data = Risk)
+car::Anova(m13, type ="III")
+
+m14 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + OpenDoorFreq + Tires + Income  + AP2.1 + AP2.2 + Window1 + Door1 + Door2 
+               , family = "nbinom1", data = Risk)
+car::Anova(m14, type ="III")
+
+m15 <- glmmTMB(AEoutFem ~ offset(log(WeeksOUT)) + Vegetation + OpenDoorFreq + Tires + Income  + AP2.1 + AP2.2 + Door1 + Door2 
+               , family = "nbinom1", data = Risk)
+car::Anova(m15, type ="III")
+
+AICtab(m9,m10,m11,m12,m13,m14,m15, base = T, weights = T, sort = FALSE)
+summary(m15)
+
+df4 <- tidy(m15)
+
+#This next code takes a lot of time, skip to the joint_test and plot effects if already tested
+df5 <- tidy(confint(m15, method = "uniroot"))
 
 
 
