@@ -46,16 +46,16 @@ Risk$Shade <- relevel(as.factor(Risk$Shade), ref = "Half shade")
 
 #For this procedure we will do a Generalized linear Model analysis
 #Evaluating the best distribution for the dataset with count data for the indoor collections
-RisInPs1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Income+ AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+RisInPs1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Income + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
                     , family = "poisson", data = Risk)
 
 #Evaluation of the overdispersion of the dataset 
 check_overdispersion(RisInPs1)
 
-RisInNB1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Income+ AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+RisInNB1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Income + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
                     , family = "nbinom1", data = Risk)
 
-RisInNB2 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Income+ AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+RisInNB2 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Income + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
                     , family = "nbinom2", data = Risk)
 
 #Visualization of the data
@@ -70,7 +70,7 @@ AIC(RisInNB2)
 
 #explore interaction contrasts of best fit with a NB2 distribution
 
-m1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Income+ AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
+m1 <- glmmTMB(AEinFem ~ offset(log(WeeksIN)) + TypeAC + OpenWindowsFreq + OpenDoorFreq + WaterStorage + OtherContainers + Income + AP2.1 + AP2.2 + Window1 + Window2 + Door1 + Door2 
               , family = "nbinom2", data = Risk)
 car::Anova(m1, type ="III")
 
@@ -191,6 +191,8 @@ df5 <- tidy(confint(m15, method = "uniroot"))
 
 
 
+Risk <- read_excel("RiskFactors4Sep.xlsx", 
+                   sheet = "Income 2")
 
 
 
@@ -201,11 +203,6 @@ df5 <- tidy(confint(m15, method = "uniroot"))
 
 
 
-
-
-
-
-          ###THIS IS THE PREVIOUS CODE
 
 
 
